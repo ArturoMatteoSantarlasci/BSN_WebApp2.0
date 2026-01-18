@@ -5,11 +5,14 @@ import it.polimi.bsnwebapp.Model.Entities.CampagnaSensoreId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
+
+/**
+ * Repository Spring Data JPA per l'entita CampagnaSensore.
+ * Espone operazioni CRUD e query derivate dai nomi dei metodi dichiarati.
+ * Viene utilizzato dai service per accedere al database MariaDB.
+ */
 
 public interface CampagnaSensoreRepository extends JpaRepository<CampagnaSensore, CampagnaSensoreId> {
     List<CampagnaSensore> findByCampagna_Id(Long idCampagna);
-    List<CampagnaSensore> findBySensore_Id(Long idSensore);
-
-    Optional<CampagnaSensore> findByCampagna_IdAndSensore_Id(Long idCampagna, Long idSensore);
+    boolean existsBySensore_Id(Long idSensore);
 }

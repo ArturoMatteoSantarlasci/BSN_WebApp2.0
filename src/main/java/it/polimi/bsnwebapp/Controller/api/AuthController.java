@@ -15,8 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller per la gestione dell'autenticazione.
+ * Controller REST per autenticazione e registrazione utenti.
+ * Espone gli endpoint /api/v1/auth/register e /api/v1/auth/login e delega ad AuthService.
+ * In caso di login restituisce il JWT sia nel body sia nell'header Authorization.
  */
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")

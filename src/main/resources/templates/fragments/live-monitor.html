@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Fragment live monitor: modal con stato sensori e grafici realtime (Chart.js). -->
+<div th:fragment="liveMonitor">
+    <dialog id="liveMonitorModal" class="modal">
+        <div class="modal-box max-w-6xl bg-neutral text-neutral-content">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-6">
+                <div>
+                    <h3 class="font-bold text-lg" id="liveCampaignName">Campagna</h3>
+                    <p class="text-sm text-neutral-content/70" id="liveCampaignMeta">Monitoraggio in tempo reale</p>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" class="btn btn-error btn-sm" onclick="window.BSNLiveMonitor.stop()">Termina</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+                <div class="card bg-neutral/70 text-neutral-content border border-neutral-content/10">
+                    <div class="card-body">
+                        <h4 class="font-semibold uppercase tracking-widest text-xs text-neutral-content/60">Sensori attivi</h4>
+                        <div id="liveSensorList" class="space-y-2 text-sm"></div>
+                    </div>
+                </div>
+                <div class="card bg-neutral/70 text-neutral-content border border-neutral-content/10 lg:col-span-2">
+                    <div class="card-body">
+                        <h4 class="font-semibold uppercase tracking-widest text-xs text-neutral-content/60">Stato batteria</h4>
+                        <div id="liveBatteryList" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="card bg-neutral/70 border border-neutral-content/10">
+                    <div class="card-body gap-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-semibold uppercase tracking-widest text-xs text-neutral-content/70">Acceleration</h4>
+                            <div class="text-xs text-neutral-content/40 uppercase tracking-widest">M/S^2</div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div class="rounded-xl border border-neutral-content/10 bg-neutral/90 p-3">
+                                <div class="text-xs uppercase tracking-widest text-neutral-content/50 mb-2">X</div>
+                                <div class="h-28">
+                                    <canvas id="chart-ax" class="w-full h-full"></canvas>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-neutral-content/10 bg-neutral/90 p-3">
+                                <div class="text-xs uppercase tracking-widest text-neutral-content/50 mb-2">Y</div>
+                                <div class="h-28">
+                                    <canvas id="chart-ay" class="w-full h-full"></canvas>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-neutral-content/10 bg-neutral/90 p-3">
+                                <div class="text-xs uppercase tracking-widest text-neutral-content/50 mb-2">Z</div>
+                                <div class="h-28">
+                                    <canvas id="chart-az" class="w-full h-full"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-neutral/70 border border-neutral-content/10">
+                    <div class="card-body gap-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-semibold uppercase tracking-widest text-xs text-neutral-content/70">Gyroscope</h4>
+                            <div class="text-xs text-neutral-content/40 uppercase tracking-widest">DEG/S</div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div class="rounded-xl border border-neutral-content/10 bg-neutral/90 p-3">
+                                <div class="text-xs uppercase tracking-widest text-neutral-content/50 mb-2">X</div>
+                                <div class="h-28">
+                                    <canvas id="chart-gx" class="w-full h-full"></canvas>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-neutral-content/10 bg-neutral/90 p-3">
+                                <div class="text-xs uppercase tracking-widest text-neutral-content/50 mb-2">Y</div>
+                                <div class="h-28">
+                                    <canvas id="chart-gy" class="w-full h-full"></canvas>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-neutral-content/10 bg-neutral/90 p-3">
+                                <div class="text-xs uppercase tracking-widest text-neutral-content/50 mb-2">Z</div>
+                                <div class="h-28">
+                                    <canvas id="chart-gz" class="w-full h-full"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card bg-neutral/70 border border-neutral-content/10">
+                    <div class="card-body gap-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-semibold uppercase tracking-widest text-xs text-neutral-content/70">Magnetometer</h4>
+                            <div class="text-xs text-neutral-content/40 uppercase tracking-widest">UT</div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div class="rounded-xl border border-neutral-content/10 bg-neutral/90 p-3">
+                                <div class="text-xs uppercase tracking-widest text-neutral-content/50 mb-2">X</div>
+                                <div class="h-28">
+                                    <canvas id="chart-mx" class="w-full h-full"></canvas>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-neutral-content/10 bg-neutral/90 p-3">
+                                <div class="text-xs uppercase tracking-widest text-neutral-content/50 mb-2">Y</div>
+                                <div class="h-28">
+                                    <canvas id="chart-my" class="w-full h-full"></canvas>
+                                </div>
+                            </div>
+                            <div class="rounded-xl border border-neutral-content/10 bg-neutral/90 p-3">
+                                <div class="text-xs uppercase tracking-widest text-neutral-content/50 mb-2">Z</div>
+                                <div class="h-28">
+                                    <canvas id="chart-mz" class="w-full h-full"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
+</div>
+
+</body>
+</html>

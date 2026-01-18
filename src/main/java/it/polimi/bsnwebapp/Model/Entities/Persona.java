@@ -8,12 +8,11 @@ import lombok.Setter;
 import java.time.LocalDate;
 
 /**
- * Entity JPA che rappresenta una persona coinvolta in una o più campagne BSN.
- * <p>
- * Nel database corrisponde alla tabella {@code persona}.
- * Una {@link Campagna} fa riferimento a una singola {@link Persona} tramite la foreign key {@code id_persona}.
- * </p>
+ * Entity JPA che rappresenta una persona (paziente).
+ * Contiene dati anagrafici e note; e' referenziata dalle campagne tramite foreign key.
+ * Mappa la tabella persona con un id auto-generato.
  */
+
 @Entity
 @Table(name = "persona")
 @Getter

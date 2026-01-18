@@ -7,15 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Entity JPA che rappresenta l'associazione tra {@link Campagna} e {@link Sensore}.
- *
- * Nel DB corrisponde alla tabella {@code campagna_sensore}.
- * Questa NON è una semplice join table Many-to-Many perché contiene un attributo extra: {@code attivo}.
- * Per questo motivo viene modellata come entity intermedia (association entity).
- *
- * La PK è composta da ({@code id_campagna}, {@code id_sensore}) e viene rappresentata da {@link CampagnaSensoreId}.
+ * Entity di associazione tra Campagna e Sensore.
+ * Mappa la tabella {@code campagna_sensore} con chiave composta e attributi extra ({@code attivo}, {@code protocollo}).
+ * Permette di registrare quali sensori sono attivi in una campagna e quale protocollo usano.
  */
-
 
 @Entity
 @Table(name = "campagna_sensore")
@@ -52,4 +47,3 @@ public class CampagnaSensore {
         this.id = new CampagnaSensoreId(campagna.getId(), sensore.getId());
     }
 }
-

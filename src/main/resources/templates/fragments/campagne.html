@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Fragment tabelle campagne: righe home, righe tutte e paginazione. -->
+<th:block th:fragment="righeHome(campagneHome)">
+<tr th:if="${#lists.isEmpty(campagneHome)}">
+    <td colspan="4" class="text-center text-gray-500 py-6">
+        Nessuna campagna in corso.
+    </td>
+</tr>
+<tr th:each="c : ${campagneHome}">
+    <td>
+        <div class="font-semibold" th:text="${c.nomePersona + ' ' + c.cognomePersona}">Mario Rossi</div>
+        <div class="text-xs text-gray-500" th:text="${c.nome}">Nome campagna</div>
+    </td>
+    <td th:text="${#temporals.format(c.dataInizio, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</td>
+    <td>
+        <span class="badge"
+              th:classappend="${c.stato.name() == 'IN_CORSO'} ? ' badge-success' : ' badge-ghost'"
+              th:text="${c.stato}">IN_CORSO</span>
+    </td>
+    <td class="text-right">
+        <div class="flex justify-end gap-2">
+            <button th:if="${c.stato.name() == 'IN_CORSO'}"
+                    data-action="live"
+                    th:attr="data-id=${c.id},data-nome=${c.nome},data-sensors=${c.sensori != null ? #strings.listJoin(c.sensori.?[attivo].![codice], ',') : ''}"
+                    class="btn btn-primary btn-xs">
+                Live
+            </button>
+            <button th:if="${c.stato.name() == 'IN_CORSO'}"
+                    hx-post th:hx-post="@{'/api/v1/campagne/' + ${c.id} + '/termina'}"
+                    hx-trigger="click"
+                    hx-swap="none"
+                    class="btn btn-error btn-xs">
+                Termina
+            </button>
+        </div>
+    </td>
+</tr>
+</th:block>
+
+<th:block th:fragment="righeTutte(campagne)">
+<tr th:if="${#lists.isEmpty(campagne)}">
+    <td colspan="6" class="text-center text-gray-500 py-6">
+        Nessuna campagna trovata.
+    </td>
+</tr>
+<tr th:each="c : ${campagne}">
+    <td>
+        <div class="font-semibold" th:text="${c.nomePersona + ' ' + c.cognomePersona}">Mario Rossi</div>
+        <div class="text-xs text-gray-500" th:text="${c.nome}">Nome campagna</div>
+    </td>
+    <td th:text="${#temporals.format(c.dataInizio, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</td>
+    <td th:text="${c.dataFine != null ? #temporals.format(c.dataFine, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+    <td th:text="${c.durataTotale != null ? c.durataTotale : '-'}">-</td>
+    <td>
+        <span class="badge"
+              th:classappend="${c.stato.name() == 'IN_CORSO'} ? ' badge-success' : ' badge-ghost'"
+              th:text="${c.stato}">IN_CORSO</span>
+    </td>
+    <td class="text-right">
+        <div class="flex justify-end gap-2">
+            <button th:if="${c.stato.name() == 'IN_CORSO'}"
+                    data-action="live"
+                    th:attr="data-id=${c.id},data-nome=${c.nome},data-sensors=${c.sensori != null ? #strings.listJoin(c.sensori.?[attivo].![codice], ',') : ''}"
+                    class="btn btn-primary btn-xs">
+                Live
+            </button>
+            <button th:if="${c.stato.name() == 'IN_CORSO'}"
+                    hx-post th:hx-post="@{'/api/v1/campagne/' + ${c.id} + '/termina'}"
+                    hx-trigger="click"
+                    hx-swap="none"
+                    class="btn btn-error btn-xs">
+                Termina
+            </button>
+            <a th:if="${c.stato.name() != 'IN_CORSO'}"
+               th:href="@{'/campagne/' + ${c.id}}"
+               class="btn btn-ghost btn-xs">
+                Dettagli
+            </a>
+            <button th:if="${c.stato.name() == 'TERMINATA'}"
+                    hx-post th:hx-post="@{'/api/v1/campagne/' + ${c.id} + '/elimina'}"
+                    hx-trigger="click"
+                    hx-swap="none"
+                    hx-confirm="Eliminare definitivamente la campagna?"
+                    class="btn btn-outline btn-xs btn-error">
+                Elimina
+            </button>
+        </div>
+    </td>
+</tr>
+</th:block>
+
+<th:block th:fragment="tabellaTutte(campagne, currentPage, totalPages)">
+    <div class="overflow-x-auto">
+        <table class="table table-zebra">
+            <thead>
+            <tr>
+                <th>Persona</th>
+                <th>Data inizio</th>
+                <th>Data fine</th>
+                <th>Durata</th>
+                <th>Stato</th>
+                <th class="text-right">Azioni</th>
+            </tr>
+            </thead>
+            <tbody th:insert="fragments/campagne :: righeTutte(${campagne})"></tbody>
+        </table>
+    </div>
+
+    <div id="campagnePagination"
+         class="mt-4 flex justify-center"
+         th:attr="data-current-page=${currentPage},data-total-pages=${totalPages}">
+        <div class="join">
+            <button class="btn btn-sm join-item"
+                    data-page="prev"
+                    th:classappend="${currentPage == 1} ? ' btn-disabled' : ''">
+                «
+            </button>
+            <button th:each="p : ${#numbers.sequence(1, totalPages)}"
+                    class="btn btn-sm join-item"
+                    th:classappend="${p == currentPage} ? ' btn-primary' : ' btn-outline'"
+                    th:attr="data-page=${p}"
+                    th:text="${p}">
+                1
+            </button>
+            <button class="btn btn-sm join-item"
+                    data-page="next"
+                    th:classappend="${currentPage == totalPages} ? ' btn-disabled' : ''">
+                »
+            </button>
+        </div>
+    </div>
+</th:block>
+
+</body>
+</html>

@@ -6,6 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
+/**
+ * Repository Spring Data JPA per l'entita Utente.
+ * Espone operazioni CRUD e query derivate dai nomi dei metodi dichiarati.
+ * Viene utilizzato dai service per accedere al database MariaDB.
+ */
+
 public interface UtenteRepository extends JpaRepository<Utente, Long> {
 
     Optional<Utente> findByUsername(String username);

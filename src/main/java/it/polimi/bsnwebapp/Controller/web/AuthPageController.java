@@ -10,6 +10,12 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controller MVC per le pagine di autenticazione.
+ * Espone le view di login e registrazione e gestisce il submit del form di registrazione.
+ * Usa AuthService per creare nuovi utenti e mostra eventuali errori di validazione.
+ */
+
 @Controller
 @RequiredArgsConstructor
 public class AuthPageController {

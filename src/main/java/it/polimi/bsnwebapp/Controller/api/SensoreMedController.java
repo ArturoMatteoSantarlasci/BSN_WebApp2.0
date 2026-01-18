@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller REST per la lettura dei sensori lato medico.
+ * Espone una lista dei sensori disponibili senza operazioni di modifica.
+ */
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/sensori")

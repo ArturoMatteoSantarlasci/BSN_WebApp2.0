@@ -22,8 +22,11 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Service che gestisce registrazione, login degli utenti e la generazione dei token JWT.
+ * Service per registrazione e login utenti.
+ * Valida i dati in input, verifica duplicati, salva l'utente con password cifrata e genera JWT.
+ * In caso di errore solleva eccezioni applicative mappate dai controller.
  */
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {

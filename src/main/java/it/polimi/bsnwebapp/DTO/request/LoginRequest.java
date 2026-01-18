@@ -4,8 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 /**
- * DTO per la richiesta di login: contiene le credenziali inserite dall'utente.
+ * DTO di richiesta per l'autenticazione utente.
+ * Viene popolato dal payload JSON dei controller REST e passato ai service per la validazione.
+ * Contiene i campi: username, password.
  */
 
 @Getter

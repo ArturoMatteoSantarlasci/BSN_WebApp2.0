@@ -5,6 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO di risposta per l'esito del login con token JWT e ruolo.
+ * Viene serializzato dai controller REST per alimentare la UI o i client esterni.
+ * Campi inclusi: userId, username, ruolo, jwtToken, tokenType.
+ */
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor

@@ -11,9 +11,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller REST per la gestione sensori lato amministrazione (USER_DEV).
+ * Consente creazione e listing dei sensori con validazione tramite SensoreService.
+ * Espone endpoint sotto /api/v1/dev/sensori.
+ */
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/sensori")
+@RequestMapping("/api/v1/dev/sensori")
 public class SensoreDevController {
 
     private final SensoreService sensoreService;

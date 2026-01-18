@@ -1,10 +1,11 @@
 package it.polimi.bsnwebapp.exception;
 
 /**
- * Classe per la gestione delle eccezioni con status code 403.
- * Estende {@link RuntimeException}, superclasse delle eccezioni
- * che possono essere lanciate durante il l'esecuzione della JVM.
+ * Eccezione applicativa per segnalare richiesta non valida (HTTP 400).
+ * Viene sollevata quando il flusso non puo proseguire e il controller deve rispondere con errore.
+ * Estende RuntimeException per propagazione senza gestione obbligatoria.
  */
+
 public class BadRequestException extends RuntimeException{
 
     public BadRequestException(String message) {

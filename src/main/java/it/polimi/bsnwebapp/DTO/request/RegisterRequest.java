@@ -8,9 +8,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
+
 /**
- * DTO per la richiesta di registrazione di un nuovo utente.
- * Contiene i dati necessari per la registrazione e include le annotazioni di validazione per garantire l'integrità dei dati.
+ * DTO di richiesta per la registrazione di un nuovo utente.
+ * Viene popolato dal payload JSON dei controller REST e passato ai service per la validazione.
+ * Contiene i campi: username, password, ruolo.
  */
 
 @Getter

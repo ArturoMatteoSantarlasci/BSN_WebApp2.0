@@ -1,6 +1,7 @@
 package it.polimi.bsnwebapp.Model.Entities;
 
 import it.polimi.bsnwebapp.Model.Enum.Protocollo;
+import it.polimi.bsnwebapp.Model.Enum.TipoMisura;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -11,18 +12,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Entity JPA che rappresenta un sensore fisico (dispositivo) utilizzato nelle campagne BSN.
- *
- * Nel database corrisponde alla tabella {@code sensore}.
- * Un sensore è identificato da:
- *   un id numerico (PK auto-increment)</li>
- *   un {@link #codice} univoco di 4 caratteri derivato dal MAC address (es. "XEXA", "5B35")
- *
- * Il campo {@link #tipo} è volutamente una stringa (es. "XIAO", "NANO33BLE") per permettere di aggiungere
- * nuovi modelli senza dover modificare il codice (evitando un enum rigido).
- *
- * L'associazione con le campagne è gestita tramite {@link CampagnaSensore} (tabella {@code campagna_sensore}),
- * perché la join table contiene un attributo extra ({@code attivo}).
+ * Entity JPA che rappresenta un sensore fisico utilizzato nelle campagne.
+ * Identificato da codice univoco di 4 caratteri derivato dal MAC address e da un nome logico.
+ * Contiene tipo, protocollo di default, lista protocolli supportati e misure disponibili.
+ * La relazione con le campagne e' gestita tramite {@link CampagnaSensore}.
  */
 
 @Entity
@@ -58,9 +51,15 @@ public class Sensore {
     @Column(name = "protocollo", nullable = false)
     private Set<Protocollo> protocolliSupportati = new HashSet<>();
 
-
-    @Column(name = "unita_misura", length = 20)
-    private String unitaMisura;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "sensore_misura",
+            joinColumns = @JoinColumn(name = "id_sensore")
+    )
+    @Enumerated(EnumType.STRING)
+    @Column(name = "misura", nullable = false)
+    @EqualsAndHashCode.Exclude
+    private Set<TipoMisura> misureSupportate = new HashSet<>();
 
     @Column(name = "codice", nullable = false, unique = true, length = 4, columnDefinition = "CHAR(4)")
     private String codice;
@@ -70,10 +69,9 @@ public class Sensore {
     @OneToMany(mappedBy = "sensore", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CampagnaSensore> campagnaSensori = new HashSet<>();
 
-    public Sensore(String nome, String tipo, Protocollo protocollo, String unitaMisura) {
+    public Sensore(String nome, String tipo, Protocollo protocollo) {
         this.nome = nome;
         this.tipo = tipo;
         this.protocollo = protocollo;
-        this.unitaMisura = unitaMisura;
     }
 }

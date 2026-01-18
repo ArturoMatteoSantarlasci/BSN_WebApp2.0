@@ -1,5 +1,3 @@
-<!--TODO: da rivedere -->
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" data-theme="light">
 <head>
@@ -9,9 +7,21 @@
 
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css"/>
     <script src="https://cdn.tailwindcss.com"></script>
+<!-- Carica HTMX (il motore che rende la pagina dinamica) e l'estensione json-enc -->
+<!-- (necessaria per inviare i dati dei form come JSON invece che come form-data standard).-->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .htmx-request.htmx-indicator {
+            display: inline-block !important;
+        }
+    </style>
 </head>
 
 <body class="min-h-screen bg-base-200">
+<!-- Home: avvio campagne, lista campagne in corso e modali di configurazione. -->
 
 <!-- TOP BAR -->
 <div class="navbar bg-base-100 shadow-md px-4">
@@ -42,17 +52,17 @@
 
             <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-56">
                 <li class="pointer-events-none opacity-70">
-                    <a class="flex justify-between">
+                    <div class="flex justify-between">
                         <span class="font-semibold">Utente</span>
                         <span th:text="${#authentication.name}">username</span>
-                    </a>
+                    </div>
                 </li>
 
                 <li th:if="${isDev}" class="pointer-events-none opacity-70">
-                    <a class="flex justify-between">
+                    <div class="flex justify-between">
                         <span class="font-semibold">Ruolo</span>
                         <span>Admin</span>
-                    </a>
+                    </div>
                 </li>
 
                 <li class="mt-2">
@@ -68,14 +78,6 @@
 
 <main class="max-w-6xl mx-auto p-4 lg:p-6">
 
-    <!-- FEEDBACK (opzionale) -->
-    <div th:if="${param.success}" class="alert alert-success text-sm py-2 mb-4">
-        <span th:text="${param.success[0]}">Operazione completata</span>
-    </div>
-    <div th:if="${param.error}" class="alert alert-error text-sm py-2 mb-4">
-        <span th:text="${param.error[0]}">Errore</span>
-    </div>
-
     <div class="flex flex-col lg:flex-row gap-6">
 
         <!-- CAMPAIGNS -->
@@ -86,14 +88,11 @@
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
                             <h2 class="card-title text-2xl">Campagne</h2>
-                            <p class="text-gray-500 text-sm">
-                                Pianifica, avvia e monitora campagne in corso o in programma.
-                            </p>
                         </div>
 
                         <div class="flex flex-wrap gap-2">
-                            <a th:href="@{/campagne/pianifica}" class="btn btn-primary btn-sm">Pianifica</a>
-                            <a th:href="@{/campagne/storico}" class="btn btn-outline btn-sm">Tutte le campagne</a>
+                            <button onclick="openCreateCampagnaModal()" class="btn btn-primary btn-sm">Avvia</button>
+                            <a href="/campagne/tutte" class="btn btn-outline btn-sm">Tutte le campagne</a>
                         </div>
                     </div>
 
@@ -103,7 +102,6 @@
                         <table class="table table-zebra">
                             <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Persona</th>
                                 <th>Data inizio</th>
                                 <th>Stato</th>
@@ -111,54 +109,8 @@
                             </tr>
                             </thead>
 
-                            <tbody>
-                            <tr th:if="${#lists.isEmpty(campagneHome)}">
-                                <td colspan="5" class="text-center text-gray-500 py-6">
-                                    Nessuna campagna pianificata o in corso.
-                                </td>
-                            </tr>
-
-                            <tr th:each="c : ${campagneHome}">
-                                <td class="font-mono" th:text="${c.id}">1</td>
-
-                                <td>
-                                    <div class="font-semibold"
-                                         th:text="${c.persona.nome + ' ' + c.persona.cognome}">
-                                        Mario Rossi
-                                    </div>
-                                    <div class="text-xs text-gray-500" th:text="${c.nome}">
-                                        Nome campagna
-                                    </div>
-                                </td>
-
-                                <td th:text="${#temporals.format(c.dataInizio, 'dd/MM/yyyy HH:mm')}">
-                                    01/01/2025 10:00
-                                </td>
-
-                                <td>
-                                    <span class="badge badge-warning"
-                                          th:if="${c.stato.name() == 'PIANIFICATA'}">PIANIFICATA</span>
-                                    <span class="badge badge-success"
-                                          th:if="${c.stato.name() == 'IN_CORSO'}">IN CORSO</span>
-                                    <span class="badge"
-                                          th:if="${c.stato.name() == 'TERMINATA'}">TERMINATA</span>
-                                </td>
-
-                                <td class="text-right">
-                                    <!-- Avvia (solo se pianificata) -->
-                                    <form th:if="${c.stato.name() == 'PIANIFICATA'}"
-                                          th:action="@{'/campagne/' + ${c.id} + '/avvia'}"
-                                          method="post" class="inline">
-                                        <button type="submit" class="btn btn-primary btn-xs">Avvia</button>
-                                    </form>
-
-                                    <!-- Apri (solo se in corso) -->
-                                    <a th:if="${c.stato.name() == 'IN_CORSO'}"
-                                       th:href="@{'/campagne/' + ${c.id}}"
-                                       class="btn btn-outline btn-xs">Apri</a>
-                                </td>
-                            </tr>
-                            </tbody>
+                            <tbody id="campagneTableBody"
+                                  th:insert="fragments/campagne :: righeHome(${campagneHome})"></tbody>
                         </table>
                     </div>
 
@@ -172,10 +124,10 @@
                 <div class="card-body">
                     <h3 class="card-title">Manutenzione</h3>
                     <p class="text-sm text-gray-500">
-                        Gestisci sensori, campagne, programmi di analisi e dati presenti in altri repository.
+                        Gestione script, sensori e database.
                     </p>
                     <div class="card-actions justify-end mt-2">
-                        <a th:href="@{/admin}" class="btn btn-secondary btn-sm">Vai</a>
+                        <a th:href="@{/admin/scripts}" class="btn btn-secondary btn-sm">Vai</a>
                     </div>
                 </div>
             </div>
@@ -184,5 +136,282 @@
     </div>
 </main>
 
+<!-- MODALE CREAZIONE CAMPAGNA -->
+<dialog id="createCampagnaModal" class="modal">
+    <div class="modal-box max-w-4xl">
+        <form method="dialog"> <!-- dialog è un elemento HTML nativo per creare modali senza bisogno di librerie esterne -->
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+
+        <h3 class="font-bold text-lg mb-4">Avvia Nuova Campagna</h3>
+
+        <!--Uso attributi HTMX-->
+        <form id="createCampagnaForm"
+              class="space-y-4"
+              hx-post="/api/v1/campagne/avvia-subito"
+              hx-ext="json-enc"
+              hx-encoding="json"
+              hx-swap="none"
+              hx-indicator="#savingSpinner">
+
+            <!-- Nome Campagna -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Nome Campagna *</span>
+                </label>
+                <input type="text" id="nomeCampagna" name="nome" placeholder="Es: Monitoraggio ECG"
+                       class="input input-bordered w-full" required />
+            </div>
+
+            <!-- Paziente -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Paziente *</span>
+                </label>
+                <div th:replace="fragments/persone :: selectPazienti(${persone})"></div>
+            </div>
+
+            <!-- Tipo Campagna -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Tipo di Campagna *</span>
+                </label>
+
+                <div id="tipiCampagnaContainer" class="space-y-3">
+                    <div class="card bg-base-200 shadow-sm" th:each="tipo : ${tipiCampagna}">
+                        <div class="card-body p-4">
+                            <div class="form-control">
+                                <div class="flex items-start gap-3">
+                                    <label class="cursor-pointer flex items-start gap-3 flex-1">
+                                        <input type="radio"
+                                               class="radio radio-primary tipo-radio"
+                                               th:id="${'tipo_' + tipo.id}"
+                                               name="idTipoCampagna"
+                                               th:value="${tipo.id}"
+                                               required
+                                               th:data-script="${tipo.scriptFileName}"
+                                               th:data-codice="${tipo.codice}"/>
+                                        <div class="flex-1">
+                                            <span class="label-text font-semibold text-base" th:text="${tipo.descrizione}">Descrizione</span>
+                                        </div>
+                                    </label>
+                                    <button type="button"
+                                            class="btn btn-outline btn-sm"
+                                            data-action="config-tipo"
+                                            th:data-type-id="${tipo.id}">
+                                        Configura
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Note -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Note</span>
+                </label>
+                <textarea id="noteCampagna" name="note" placeholder="Note opzionali sulla campagna..."
+                          class="textarea textarea-bordered h-24" rows="3"></textarea>
+            </div>
+
+            <!-- Alert Errori -->
+            <div id="createCampagnaError" class="alert alert-error hidden">
+                <span id="createCampagnaErrorText"></span>
+            </div>
+
+            <!-- Pulsanti -->
+            <div class="modal-action">
+                <button type="button" onclick="document.getElementById('createCampagnaModal').close()"
+                        class="btn btn-ghost">Annulla</button>
+                <button type="submit" class="btn btn-primary" id="btnSaveCampagna">
+                    <span class="loading loading-spinner loading-sm hidden" id="savingSpinner"></span>
+                    Avvia Campagna
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- MODALE CONFIGURAZIONE CAMPAGNA -->
+<dialog id="configCampagnaModal" class="modal">
+    <div class="modal-box max-w-3xl">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+
+        <h3 class="font-bold text-lg mb-4">Configura Campagna</h3>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Script *</span>
+                </label>
+                <select id="scriptFileName" name="scriptFileName" class="select select-bordered" form="createCampagnaForm" required>
+                    <option value="">Seleziona...</option>
+                    <option th:each="script : ${scriptsAvailable}"
+                            th:value="${script}"
+                            th:text="${script}">
+                        script.py
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Frequenza di campionamento (Hz) *</span>
+                    <span class="badge badge-outline" id="frequenzaValue">50 Hz</span>
+                </label>
+                <input type="range" id="frequenzaCampagna" name="frequenza" min="10" max="200" step="1" value="50"
+                       class="range range-primary" form="createCampagnaForm" required />
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>10 Hz</span>
+                    <span>200 Hz</span>
+                </div>
+            </div>
+
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Connettività *</span>
+                </label>
+                <select id="connettivitaCampagna" name="connettivita" class="select select-bordered" form="createCampagnaForm" required>
+                    <option value="">Seleziona...</option>
+                    <option value="BLE">BLE</option>
+                    <option value="ANT">ANT</option>
+                    <option value="WIFI">WIFI</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div id="dbConfigFields" class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Database disponibile (opzionale)</span>
+                </label>
+                <select id="dbConfigId" name="idDatabase" class="select select-bordered" form="createCampagnaForm">
+                    <option value="0">Nessun salvataggio (Influx MQTT)</option>
+                    <option th:each="db : ${databaseConfigs}"
+                            th:value="${db.id}"
+                            th:text="${db.nome + ' — ' + db.host + ' (' + db.dbName + ')'}">
+                        DB
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-control mt-4">
+            <label class="label">
+                <span class="label-text font-semibold">Sensori *</span>
+                <span class="label-text-alt text-gray-500">Seleziona i sensori da utilizzare</span>
+            </label>
+            <div class="mt-1 space-y-2">
+                <label class="cursor-pointer flex items-center gap-2" th:each="sensore : ${sensori}">
+                    <input type="checkbox" class="checkbox checkbox-sm"
+                           name="idSensori"
+                           th:value="${sensore.id}"
+                           form="createCampagnaForm" />
+                    <span class="label-text">
+                        <span class="font-mono font-semibold" th:text="${sensore.codice}">S001</span> -
+                        <span th:text="${sensore.nome}">Sensore</span>
+                        <span class="text-xs text-gray-500">(<span th:text="${sensore.tipo}">Tipo</span>)</span>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div class="modal-action">
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('configCampagnaModal').close()">
+                Salva configurazione
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<!-- Alert Successo (fuori dal modale) -->
+<div id="successAlert" class="toast toast-top toast-center hidden">
+    <div class="alert alert-success">
+        <span id="successAlertText">Campagna avviata con successo!</span>
+    </div>
+</div>
+
+<div th:replace="fragments/live-monitor :: liveMonitor"></div>
+
+<!-- MODALE CREAZIONE PAZIENTE -->
+<dialog id="createPersonaModal" class="modal">
+    <div class="modal-box max-w-2xl">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+
+        <h3 class="font-bold text-lg mb-4">Aggiungi Nuovo Paziente</h3>
+
+        <form id="createPersonaForm"
+              class="space-y-4"
+              hx-post="/api/v1/persone"
+              hx-ext="json-enc"
+              hx-encoding="json"
+              hx-swap="none"
+              hx-indicator="#savingPersonaSpinner">
+
+            <!-- Nome -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Nome *</span>
+                </label>
+                <input type="text" id="nomePersona" name="nome" placeholder="Es: Mario"
+                       class="input input-bordered w-full" required />
+            </div>
+
+            <!-- Cognome -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Cognome *</span>
+                </label>
+                <input type="text" id="cognomePersona" name="cognome" placeholder="Es: Rossi"
+                       class="input input-bordered w-full" required />
+            </div>
+
+            <!-- Data di Nascita -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Data di Nascita</span>
+                </label>
+                <input type="date" id="dataNascitaPersona" name="dataNascita"
+                       class="input input-bordered w-full" />
+            </div>
+
+            <!-- Note -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Note</span>
+                </label>
+                <textarea id="notePersona" name="note" placeholder="Note opzionali sul paziente..."
+                          class="textarea textarea-bordered h-24" rows="3"></textarea>
+            </div>
+
+            <!-- Alert Errori -->
+            <div id="createPersonaError" class="alert alert-error hidden">
+                <span id="createPersonaErrorText"></span>
+            </div>
+
+            <!-- Pulsanti -->
+            <div class="modal-action">
+                <button type="button" onclick="document.getElementById('createPersonaModal').close()"
+                        class="btn btn-ghost">Annulla</button>
+                <button type="submit" class="btn btn-primary" id="btnSavePersona">
+                    <span class="loading loading-spinner loading-sm hidden" id="savingPersonaSpinner"></span>
+                    Aggiungi Paziente
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- JavaScript esterno -->
+<script th:src="@{/js/campagne.js}"></script>
+<script th:src="@{/js/campagne-live.js}"></script>
 </body>
 </html>

@@ -8,11 +8,16 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+/**
+ * Repository Spring Data JPA per l'entita Campagna.
+ * Espone operazioni CRUD e query derivate dai nomi dei metodi dichiarati.
+ * Viene utilizzato dai service per accedere al database MariaDB.
+ */
+
 public interface CampagnaRepository extends JpaRepository<Campagna, Long> {
     List<Campagna> findByStato(StatoCampagna stato);
     List<Campagna> findByPersona_Id(Long idPersona);
     List<Campagna> findByUtenteCreatore_Id(Long idUtenteCreatore);
-    List<Campagna> findByNomeContainingIgnoreCase(String nome);
 
     /**
      * Restituisce le campagne da mostrare in home filtrate per stati.

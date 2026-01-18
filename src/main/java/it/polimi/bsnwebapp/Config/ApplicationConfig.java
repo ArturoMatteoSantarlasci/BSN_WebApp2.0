@@ -15,9 +15,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Bean utili per la configurazione generale dell'applicazione. Grazie all'annotazione "@Configuration",
- * il contenuto di questa classe viene eseguito appena il server viene avviato.
+ * Configurazione applicativa di base per l'autenticazione.
+ * Espone i bean usati da Spring Security: UserDetailsService su UtenteRepository, PasswordEncoder BCrypt,
+ * AuthenticationProvider DAO e AuthenticationManager.
+ * Questa configurazione e' condivisa sia dalle API REST sia dalle pagine web protette.
  */
+
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {

@@ -13,10 +13,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Entity JPA che rappresenta un utente.
- *
- * Nel database corrisponde alla tabella {@code utente}.
- * Questa entity implementa {@link UserDetails} per integrarsi con Spring Security
+ * Entity JPA che rappresenta un utente applicativo.
+ * Implementa {@link UserDetails} per integrare Spring Security con ruoli e credenziali.
+ * Mappa la tabella {@code utente} e fornisce le authority a partire dal ruolo associato.
  */
 
 @Entity

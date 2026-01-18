@@ -1,12 +1,19 @@
 package it.polimi.bsnwebapp.DTO.request;
 
 import it.polimi.bsnwebapp.Model.Enum.Protocollo;
+import it.polimi.bsnwebapp.Model.Enum.TipoMisura;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.Set;
+
+/**
+ * DTO di richiesta per la creazione di un sensore.
+ * Viene popolato dal payload JSON dei controller REST e passato ai service per la validazione.
+ * Contiene i campi: codice, nome, tipo, protocolloDefault, protocolliSupportati, misureSupportate.
+ */
 
 @Getter
 @Setter
@@ -30,5 +37,6 @@ public class SensoreCreateRequest {
     // opzionale: se null/empty => {protocolloDefault}
     private Set<Protocollo> protocolliSupportati;
 
-    private String unitaMisura;
+    // opzionale: se null/empty => tutte le misure disponibili
+    private Set<TipoMisura> misureSupportate;
 }

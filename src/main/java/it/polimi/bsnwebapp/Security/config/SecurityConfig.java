@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,11 +14,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Configurazione di Spring Security per gestire l'autenticazione e l'autorizzazione.
+ * Configurazione Spring Security con due SecurityFilterChain distinti.
+ * La catena API protegge /api/** con JWT (o sessione) e applica le regole per ruoli USER_MED/USER_DEV.
+ * La catena web gestisce login form, logout e accesso alle pagine, includendo la pagina admin.
  */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -25,60 +29,46 @@ public class SecurityConfig {
 
 
     /**
-     * Configura la catena di filtri di sicurezza HTTP.
-     * @param http Istanza di {@link HttpSecurity} utilizzata per configurare la sicurezza.
-     * @return Un {@link SecurityFilterChain} configurato.
-     * @throws Exception se si verifica un errore nella configurazione.
+     * Configurazione sicurezza per API REST con autenticazione JWT o sessione.
      */
-    //1) API: JWT stateless
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
-
         http
                 .securityMatcher("/api/**")
-                // CSRF disabilitato per API stateless con JWT
                 .csrf(csrf -> csrf.disable())
-
-                // (opzionale) CORS: puoi abilitarlo così quando ti servirà
-                // .cors(Customizer.withDefaults())
-
-                // Autorizzazioni sulle richieste
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/dev/**").hasAuthority("USER_DEV")
-                        .requestMatchers("/api/v1/med/**").hasAuthority("USER_MED")
+                        .requestMatchers("/api/v1/**").hasAnyAuthority("USER_MED", "USER_DEV")
                         .anyRequest().authenticated()
                 )
-
-                // Sessione stateless (niente HttpSession lato server)
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
-
-                // Provider di autenticazione (usa il tuo UserDetailsService + PasswordEncoder)
                 .authenticationProvider(authenticationProvider)
-
-                // Filtro JWT prima del filtro username/password standard
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 2) WEB: thymeleaf
+    /**
+     * Configurazione sicurezza per pagine web con form login.
+     */
     @Bean
     @Order(2)
     public SecurityFilterChain webSecurity(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // per partire veloce; poi lo riattiviamo
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/register", "/error",
                                 "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                        .requestMatchers("/admin/**").hasAuthority("USER_DEV")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .loginProcessingUrl("/login") // combacia col tuo th:action in login.html
+                        .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/", true)
                         .failureUrl("/login?error=true")
                         .permitAll()

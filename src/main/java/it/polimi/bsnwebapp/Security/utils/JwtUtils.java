@@ -15,9 +15,11 @@ import java.util.HashMap;
 import java.util.function.Function;
 
 /**
- * Utils per la gestione dei token JWT.
- * Questa classe contiene metodi per generare, estrarre e validare i token JWT.
+ * Utility per la gestione dei token JWT.
+ * Genera token firmati con la chiave configurata, estrae claim, verifica scadenza e validita per un utente.
+ * Usata da AuthService in fase di login e dal filtro JWT per la validazione delle richieste.
  */
+
 @Service
 public class JwtUtils {
 

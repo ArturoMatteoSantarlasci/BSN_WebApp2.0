@@ -1,6 +1,7 @@
 package it.polimi.bsnwebapp.Model.Entities;
 
 import it.polimi.bsnwebapp.Model.Enum.StatoCampagna;
+import it.polimi.bsnwebapp.Model.Enum.Protocollo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,14 +13,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Entity JPA che rappresenta una campagna di raccolta dati BSN.
- *
- * Nel database corrisponde alla tabella {@code campagna}.
- * Una campagna contiene:
- *   dati descrittivi (nome, date, note, stato)
- *   riferimenti a {@link Persona} e all'utente creatore {@link Utente}
- *   un insieme di {@link TipoCampagna} (relazione Many-to-Many tramite {@code campagna_tipo})
- *   un insieme di sensori associati tramite {@link CampagnaSensore} (tabella {@code campagna_sensore})
+ * Entity JPA che rappresenta una campagna di acquisizione dati.
+ * Mappa la tabella {@code campagna} e include metadati (nome, date, note, stato) e configurazioni
+ * (frequenza, durata, scriptFileName, connettivita, dbHost/dbName).
+ * Relazioni: Persona e Utente creatore (ManyToOne), TipoCampagna (ManyToMany via {@code campagna_tipo}),
+ * Sensore (OneToMany via {@link CampagnaSensore}).
  */
 
 @Entity
@@ -45,11 +43,30 @@ public class Campagna {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "stato", nullable = false)
-    private StatoCampagna stato = StatoCampagna.PIANIFICATA;
+    private StatoCampagna stato = StatoCampagna.IN_CORSO;
 
     @Lob
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
+
+    @Column(name = "frequenza")
+    private Integer frequenza; // es. in Hz
+
+    @Column(name = "durata")
+    private Integer durata;    // es. in secondi o minuti
+
+    @Column(name = "script_filename", length = 255)
+    private String scriptFileName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "connettivita", length = 20)
+    private Protocollo connettivita;
+
+    @Column(name = "db_host", length = 255)
+    private String dbHost;
+
+    @Column(name = "db_name", length = 255)
+    private String dbName;
 
     //  RELAZIONI MANY-TO-ONE (Foreign Keys)
 
@@ -78,7 +95,7 @@ public class Campagna {
     // 1. Campagna <-> Tipo
     // Non serve entity intermedia perché la tabella di mezzo non ha colonne extra
     // Join table pura: campagna_tipo (solo FK) => ManyToMany
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)  //EAGER perchè ci servono subito i nomi degli script
     @JoinTable(
             name = "campagna_tipo",
             joinColumns = @JoinColumn(name = "id_campagna"),
@@ -101,7 +118,7 @@ public class Campagna {
         this.dataFine = dataFine;
         this.persona = persona;
         this.utenteCreatore = utenteCreatore;
-        this.stato = (stato != null) ? stato : StatoCampagna.PIANIFICATA; //Default
+        this.stato = (stato != null) ? stato : StatoCampagna.IN_CORSO; //Default
         this.note = note;
     }
 }
